@@ -1,0 +1,4 @@
+# need source and .jucer file, everything else don't need
+
+**/builds
+**/JuceLibraryCode
