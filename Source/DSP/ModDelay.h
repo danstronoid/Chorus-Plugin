@@ -27,9 +27,7 @@ template <typename SampleType>
 class ModDelay
 {
 public:
-    ModDelay()
-    {
-    }
+    ModDelay();
 
     // prepares the delay for playback given a ProcessSpec
     void prepare(const juce::dsp::ProcessSpec& spec);
@@ -94,6 +92,9 @@ public:
     // returns the targetDelay * sampleRate which will determine the plug in latency
     // useful for mod effects that require delay compensation
     int getLatency();
+
+    // returns the number of buffers allocated (one per channel)
+    size_t getNumChannels();
 
     //==============================================================================
 

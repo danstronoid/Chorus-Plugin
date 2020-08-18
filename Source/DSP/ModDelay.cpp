@@ -95,7 +95,7 @@ void ModDelay<SampleType>::setMaxDelayTime(SampleType maxDelay)
 }
 
 template <typename SampleType>
-void ModDelay<SampleType>::setDelayTime(SampleType delayTime, size_t channel = 0, bool force = false)
+void ModDelay<SampleType>::setDelayTime(SampleType delayTime, size_t channel/* = 0*/, bool force/* = false*/)
 {
     jassert(delayTime > SampleType(0) && delayTime < (m_maxDelayTime - m_maxDepth));
 
@@ -106,7 +106,7 @@ void ModDelay<SampleType>::setDelayTime(SampleType delayTime, size_t channel = 0
 }
 
 template <typename SampleType>
-void ModDelay<SampleType>::setPhaseOffset(SampleType phaseOffset, size_t channel = 0)
+void ModDelay<SampleType>::setPhaseOffset(SampleType phaseOffset, size_t channel/* = 0*/)
 {
     m_lfos[channel].setPhaseOffset(phaseOffset);
 }
@@ -144,6 +144,12 @@ template <typename SampleType>
 int ModDelay<SampleType>::getLatency()
 {
     return juce::roundToInt(m_delayTimes[0].getCurrentValue() * m_sampleRate);
+}
+
+template <typename SampleType>
+size_t ModDelay<SampleType>::getNumChannels()
+{
+    return m_delayBuffers.size();
 }
 
 //==============================================================================
