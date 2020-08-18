@@ -7,6 +7,7 @@
     <GROUP id="{AE628D08-3C4B-7DEE-0AF9-31D98934740D}" name="Source">
       <GROUP id="{6E7E54C3-FDEE-9948-78D2-0E6C1FA53BD6}" name="DSP">
         <FILE id="OdXBvf" name="DelayBuffer.h" compile="0" resource="0" file="Source/DSP/DelayBuffer.h"/>
+        <FILE id="FceD4H" name="Oscillator.h" compile="0" resource="0" file="Source/DSP/Oscillator.h"/>
       </GROUP>
       <GROUP id="{389BCDA8-0642-B559-050C-98F6FEE4D4F5}" name="GUI"/>
       <FILE id="u9w0JK" name="PluginProcessor.cpp" compile="1" resource="0"

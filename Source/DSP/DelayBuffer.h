@@ -12,13 +12,14 @@
 
 #include <JuceHeader.h>
 
-using namespace juce;
 
+namespace dingus 
+{
 
 //==============================================================================
 /**  
- * Circular buffer for a delay line, can be used for integer or fractional delays.
- * Use a float or double audio sample type. 
+    Circular buffer for a delay line, can be used for integer or fractional delays.
+    Use a float or double audio sample type. 
  */
 template <typename SampleType>
 class DelayBuffer
@@ -90,3 +91,7 @@ private:
     size_t m_position{ 0 };
     std::vector<SampleType> m_data;
 };
+//==============================================================================
+
+} // dingus
+
