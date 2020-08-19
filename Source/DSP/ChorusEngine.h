@@ -144,9 +144,6 @@ private:
     // this enum determines the algorithm used by the chorus engine
     Mode m_mode{ Mode::STEREO };
 
-    using Filter = juce::dsp::StateVariableFilter::Filter<SampleType>;
-    using FilterParams = juce::dsp::StateVariableFilter::Parameters<SampleType>;
-
     enum {
         voicesIndex,
         highPassIndex,
@@ -155,8 +152,8 @@ private:
 
     juce::dsp::ProcessorChain<
         ChorusVoices<SampleType>,
-        juce::dsp::ProcessorDuplicator<Filter, FilterParams>,
-        juce::dsp::ProcessorDuplicator<Filter, FilterParams>
+        juce::dsp::StateVariableTPTFilter<SampleType>,
+        juce::dsp::StateVariableTPTFilter<SampleType>
     > processorChain;
 
     // high and low pass filters which can be used to filter the processed signal
@@ -165,6 +162,8 @@ private:
     const size_t m_filterUpdateRate{ 100 };
 
     // cut and boost filters for each channel
+    // might move these into the processor chain using the processorDuplicator
+    // then I could toggle the bypass when switching to/from dimension mode
     std::vector<juce::dsp::IIR::Filter<SampleType>> m_boostFilters;
     std::vector<juce::dsp::IIR::Filter<SampleType>> m_cutFilters;
     SampleType m_crossoverFreq{ SampleType(200) };

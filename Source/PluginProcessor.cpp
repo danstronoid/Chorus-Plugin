@@ -241,16 +241,16 @@ int ChoruspluginAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void ChoruspluginAudioProcessor::setCurrentProgram (int index)
+void ChoruspluginAudioProcessor::setCurrentProgram (int /*index*/)
 {
 }
 
-const juce::String ChoruspluginAudioProcessor::getProgramName (int index)
+const juce::String ChoruspluginAudioProcessor::getProgramName (int /*index*/)
 {
     return {};
 }
 
-void ChoruspluginAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void ChoruspluginAudioProcessor::changeProgramName (int /*index*/, const juce::String& /*newName*/)
 {
 }
 
@@ -305,7 +305,7 @@ bool ChoruspluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 }
 #endif
 
-void ChoruspluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void ChoruspluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& /*midiMessages*/)
 {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();

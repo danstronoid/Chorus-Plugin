@@ -32,12 +32,10 @@ void ChorusEngine<SampleType>::prepare(const juce::dsp::ProcessSpec& spec)
 
     // low and high pass filters
     auto& hiPass = processorChain.get<highPassIndex>();
-    hiPass.state->type = FilterParams::Type::highPass;
-    hiPass.state->setCutOffFrequency(spec.sampleRate, m_hiPassCutoff.getCurrentValue());
+    hiPass.setType(juce::dsp::StateVariableTPTFilterType::highpass);
 
     auto& lowPass = processorChain.get<lowPassIndex>();
-    lowPass.state->type = FilterParams::Type::lowPass;
-    lowPass.state->setCutOffFrequency(spec.sampleRate, m_lowPassCutoff.getCurrentValue());
+    lowPass.setType(juce::dsp::StateVariableTPTFilterType::lowpass);
 
     // shelving filters for cut and boost, centered at 200Hz, Q = 1, with 0.3x boost/cut
     auto boostCoef = juce::dsp::IIR::Coefficients<SampleType>::makeLowShelf(spec.sampleRate, m_crossoverFreq, SampleType(1), SampleType(13e-1));
@@ -88,10 +86,10 @@ void ChorusEngine<SampleType>::updateFilterCutoffs(int skip /*= 0*/)
     m_lowPassCutoff.skip(skip);
 
     auto& hiPass = processorChain.get<highPassIndex>();
-    hiPass.state->setCutOffFrequency(m_sampleRate, m_hiPassCutoff.getNextValue());
+    hiPass.setCutoffFrequency(m_hiPassCutoff.getNextValue());
 
     auto& lowPass = processorChain.get<lowPassIndex>();
-    lowPass.state->setCutOffFrequency(m_sampleRate, m_lowPassCutoff.getNextValue());
+    lowPass.setCutoffFrequency(m_lowPassCutoff.getNextValue());
 }
 
 //==============================================================================
