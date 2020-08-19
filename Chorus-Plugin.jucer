@@ -22,7 +22,20 @@
         <FILE id="spGsDS" name="Oscillator.cpp" compile="1" resource="0" file="Source/DSP/Oscillator.cpp"/>
         <FILE id="FceD4H" name="Oscillator.h" compile="0" resource="0" file="Source/DSP/Oscillator.h"/>
       </GROUP>
-      <GROUP id="{389BCDA8-0642-B559-050C-98F6FEE4D4F5}" name="GUI"/>
+      <GROUP id="{389BCDA8-0642-B559-050C-98F6FEE4D4F5}" name="GUI">
+        <GROUP id="{DDEE313F-1BCA-C5D2-2691-565AA683DC58}" name="Components">
+          <FILE id="NzOck8" name="FilterComponent.h" compile="0" resource="0"
+                file="Source/GUI/Components/FilterComponent.h"/>
+          <FILE id="nTTXuz" name="LfoComponent.h" compile="0" resource="0" file="Source/GUI/Components/LfoComponent.h"/>
+          <FILE id="hI2QeX" name="MainComponent.h" compile="0" resource="0" file="Source/GUI/Components/MainComponent.h"/>
+          <FILE id="SxdRv3" name="ModComponent.h" compile="0" resource="0" file="Source/GUI/Components/ModComponent.h"/>
+          <FILE id="AwKKKQ" name="TabComponent.h" compile="0" resource="0" file="Source/GUI/Components/TabComponent.h"/>
+          <FILE id="RgnUy7" name="TitleComponent.h" compile="0" resource="0"
+                file="Source/GUI/Components/TitleComponent.h"/>
+          <FILE id="U5ozP3" name="VoiceComponent.h" compile="0" resource="0"
+                file="Source/GUI/Components/VoiceComponent.h"/>
+        </GROUP>
+      </GROUP>
       <FILE id="nJ9yxR" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="AOoIX4" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>

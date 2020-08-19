@@ -334,8 +334,8 @@ bool ChoruspluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* ChoruspluginAudioProcessor::createEditor()
 {
-    //return new ChoruspluginAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new ChoruspluginAudioProcessorEditor (*this, parameters);
+    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================

@@ -10,12 +10,15 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-ChoruspluginAudioProcessorEditor::ChoruspluginAudioProcessorEditor (ChoruspluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+ChoruspluginAudioProcessorEditor::ChoruspluginAudioProcessorEditor (ChoruspluginAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : AudioProcessorEditor (&p), audioProcessor (p), parameters(vts),
+    mainComponent(vts), titleComponent(vts), tabComponent(vts)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (windowWidth, windowHeight);
+
+    addAndMakeVisible(&mainComponent);
+    addAndMakeVisible(&titleComponent);
+    addAndMakeVisible(&tabComponent);
 }
 
 ChoruspluginAudioProcessorEditor::~ChoruspluginAudioProcessorEditor()
@@ -25,16 +28,20 @@ ChoruspluginAudioProcessorEditor::~ChoruspluginAudioProcessorEditor()
 //==============================================================================
 void ChoruspluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void ChoruspluginAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    juce::Rectangle<int> area = getLocalBounds().reduced(windowPadding);
+
+    int componentHeight = area.getHeight() / 2;
+    int componentWidth = area.getWidth() / 2;
+
+    juce::Rectangle<int> top = area.removeFromTop(componentHeight);
+    titleComponent.setBounds(top.removeFromLeft(componentWidth));
+    tabComponent.setBounds(top.removeFromLeft(componentWidth));
+
+    mainComponent.setBounds(area.removeFromTop(componentHeight));
 }

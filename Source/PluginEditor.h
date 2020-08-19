@@ -10,6 +10,9 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "GUI/Components/MainComponent.h"
+#include "GUI/Components/TabComponent.h"
+#include "GUI/Components/TitleComponent.h"
 
 //==============================================================================
 /**
@@ -17,7 +20,7 @@
 class ChoruspluginAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    ChoruspluginAudioProcessorEditor (ChoruspluginAudioProcessor&);
+    ChoruspluginAudioProcessorEditor (ChoruspluginAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~ChoruspluginAudioProcessorEditor() override;
 
     //==============================================================================
@@ -25,9 +28,16 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     ChoruspluginAudioProcessor& audioProcessor;
+    juce::AudioProcessorValueTreeState& parameters;
+
+    const int windowPadding{ 20 };
+    const int windowWidth{ 800 + 2 * windowPadding };
+    const int windowHeight{ 400 + 2 * windowPadding };
+
+    MainComponent mainComponent;
+    TitleComponent titleComponent;
+    TabComponent tabComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChoruspluginAudioProcessorEditor)
 };
