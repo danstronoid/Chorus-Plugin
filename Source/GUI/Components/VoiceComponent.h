@@ -15,6 +15,8 @@
 
 //==============================================================================
 /*
+    This voice component holds the controls for the voice parameters as well as 
+    the mode selector.
 */
 class VoiceComponent : public juce::Component
 {

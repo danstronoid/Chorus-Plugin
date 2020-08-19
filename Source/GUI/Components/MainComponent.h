@@ -14,6 +14,8 @@
 
 //==============================================================================
 /*
+    This is the main component which holds the controls for the core parameters
+    of the chorus.
 */
 class MainComponent : public juce::Component
 {

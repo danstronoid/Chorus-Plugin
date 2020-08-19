@@ -15,6 +15,7 @@
 
 //==============================================================================
 /*
+    This Mod Component holds the controls for the modulator.
 */
 class ModComponent : public juce::Component
 {

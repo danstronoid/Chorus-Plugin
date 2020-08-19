@@ -15,6 +15,7 @@
 
 //==============================================================================
 /*
+    This filter component holds the controls for the high pass and low pass filters.
 */
 class FilterComponent : public juce::Component
 {

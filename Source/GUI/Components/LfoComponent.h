@@ -15,6 +15,7 @@
 
 //==============================================================================
 /*
+    This lfo component holds the controls for the lfo type and phase.
 */
 class LfoComponent : public juce::Component
 {

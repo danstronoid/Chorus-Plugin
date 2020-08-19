@@ -19,6 +19,8 @@
 
 //==============================================================================
 /*
+    This tabbed component has tabs for various components that are categorized by 
+    functionality.
 */
 class TabComponent : public juce::Component
 {

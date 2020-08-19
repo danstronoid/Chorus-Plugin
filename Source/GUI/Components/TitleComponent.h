@@ -15,6 +15,7 @@
 
 //==============================================================================
 /*
+    This title component holds all title text/graphics as well as master input/output controls.
 */
 class TitleComponent : public juce::Component
 {
