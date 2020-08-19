@@ -18,29 +18,31 @@
 namespace dingus
 {
 
+//==============================================================================
+/**
+    This modulator class is used to modulate a ranged audio parameter with a
+    lfo signal.  This is done by passing a processCallback function to the modulator
+    class which then calls the processCallback for every sample in the process block.
+    The processCallback function should be the parameterChanged function associated with 
+    a parameter listener.  It is important that this function and a valid parameter is
+    passed to the modulator before calling the process method. Then in the main processBlock, 
+    modulator.process has to be called before any other processing to ensure the parameter 
+    changes will be applied to that block.
+*/
 class Modulator
 {
 public:
-    Modulator()
-    {
-    }
+    Modulator();
 
-    void prepare(const juce::dsp::ProcessSpec& spec)
-    {
-        // initialize the mod lfo
-        m_modLfo.prepare(spec);
-        m_modLfoDepth.reset(spec.sampleRate, 0.5);
-    }
+    // prepares the modulator for playback
+    void prepare(const juce::dsp::ProcessSpec& spec);
 
-    float getNextValue() noexcept
-    {
-        float currentValue = *m_targetValue;
-        float lfoValue = m_modLfo.processSample();
-        float maxDepth = m_maxValue * 0.5f;
-        return juce::jlimit(m_minValue, m_maxValue, currentValue + lfoValue * m_modLfoDepth.getNextValue() * maxDepth);
-    }
+    // calculates the next value using by applying the lfo signal to the target value
+    // the value is hard limited by the range of the provided parameter
+    float getNextValue();
 
     // the process callback must be set before calling process
+    // this calls the processCallback for each sample in the provided context
     template<typename ProcessContext>
     void process(const ProcessContext& context) noexcept
     {
@@ -55,46 +57,34 @@ public:
         }
     }
 
-    void reset() noexcept
-    {
-        m_modLfo.reset();
-    }
+    // resets the lfo position
+    void reset();
+
+    //==============================================================================
 
     // this must be set before process is called
-    void setProcessCallback(std::function<void(const juce::String&, float)> callback)
-    {
-        m_processCallback = callback;
-    }
+    // sets the function that will be called in the process block
+    void setProcessCallback(std::function<void(const juce::String&, float)> callback);
 
     // this must be set before process is called, otherwise this could produce undefined behaviour 
-    void setTargetParameter(std::atomic<float>* value, juce::NormalisableRange<float> range, const juce::String& id)
-    {
-        m_targetID = id;
-        m_targetValue = value;
-        m_minValue = range.start;
-        m_maxValue = range.end;
-    }
+    // this takes the target parameter's raw pointer value, range, and id
+    void setTargetParameter(std::atomic<float>* value, juce::NormalisableRange<float> range, const juce::String& id);
 
-    void setLfoRate(float rate)
-    {
-        m_modLfoRate = rate;
-        m_modLfo.setFrequency(rate);
-    }
+    //==============================================================================
 
-    void setLfoDepth(float depth)
-    {
-        m_modLfoDepth.setTargetValue(depth);
-    }
+    // sets the rate of the lfo
+    void setLfoRate(float rate);
 
-    void setLfoType(WaveType type)
-    {
-        m_modLfo.setType(type);
-    }
+    // sets the depth of the lfo
+    void setLfoDepth(float depth);
 
-    const juce::String& getCurrentID()
-    {
-        return m_targetID;
-    }
+    // sets the lfo wave type
+    void setLfoType(WaveType type);
+
+    // returns the ID of the current target parameter
+    const juce::String& getCurrentID() const;
+
+    //==============================================================================
 
 private:
     // lfo for modulation
@@ -109,5 +99,7 @@ private:
 
     std::function<void(const juce::String&, float)> m_processCallback{};
 };
+
+//==============================================================================
 
 } // dingus

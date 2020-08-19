@@ -34,8 +34,9 @@ ChoruspluginAudioProcessor::ChoruspluginAudioProcessor()
         parameters.addParameterListener(id, this);
 
     // set the processCallback for the modulator to change a parameter
-    modulator.setProcessCallback([this](const juce::String& id, float value) 
-        { parameterChanged(id, value); });
+    modulator.setProcessCallback([this](const juce::String& id, float value) { 
+        parameterChanged(id, value); 
+        });
 }
 
 ChoruspluginAudioProcessor::~ChoruspluginAudioProcessor()
@@ -256,8 +257,8 @@ void ChoruspluginAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void ChoruspluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    //modulator.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
-    processorChain.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    modulator.prepare({ sampleRate, static_cast<juce::uint32>(samplesPerBlock), 2 });
+    processorChain.prepare({ sampleRate, static_cast<juce::uint32>(samplesPerBlock), 2 });
 
     auto& inputGain = processorChain.get<inputGainIndex>();
     auto& outputGain = processorChain.get<outputGainIndex>();
