@@ -152,4 +152,8 @@ void ChorusVoices<SampleType>::updateDelayTime()
 }
 
 //==============================================================================
+
+template class ChorusVoices<float>;
+template class ChorusVoices<double>;
+
 } // dingus

@@ -11,6 +11,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <vector>
+#include <cmath>
 #include "ModDelay.h"
 
 namespace dingus

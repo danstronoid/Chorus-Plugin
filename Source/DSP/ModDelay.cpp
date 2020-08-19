@@ -88,8 +88,8 @@ void ModDelay<SampleType>::setMaxDelayTime(SampleType maxDelay)
     // this is more flexible then it needs to be
     // make sure the max delay time is a reasonable number
     // this will impact the buffer size allocated
-    jassert(maxDelay >= SampleType(0) && maxDelay < SampleType(10))
-        m_maxDelayTime = maxDelay;
+    jassert(maxDelay >= SampleType(0) && maxDelay < SampleType(10));
+    m_maxDelayTime = maxDelay;
 
     updateDelayBufferSize();
 }
@@ -162,6 +162,9 @@ void ModDelay<SampleType>::updateDelayBufferSize()
     for (auto& buffer : m_delayBuffers)
         buffer.resize(bufferSize);
 }
+
+template class ModDelay<float>;
+template class ModDelay<double>;
 
 //==============================================================================
 } // dingus

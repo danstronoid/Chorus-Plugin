@@ -193,4 +193,8 @@ int ChorusEngine<SampleType>::getLatency() const
 
 //==============================================================================
 
+template class ChorusEngine<float>;
+template class ChorusEngine<double>;
+
+
 } // dingus

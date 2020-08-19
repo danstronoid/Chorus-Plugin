@@ -9,6 +9,12 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+// this is a helper function to create a range with a skew for frequency
+juce::NormalisableRange<float> frequencyRange(float min, float max, float interval)
+{
+    return { min, max, interval, 1.0f / std::log2(1.0f + std::sqrt(max / min)) };
+}
+
 //==============================================================================
 ChoruspluginAudioProcessor::ChoruspluginAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -19,13 +25,170 @@ ChoruspluginAudioProcessor::ChoruspluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
 #endif
+    parameters(*this, nullptr, "parameters", createParameterLayout())
 {
+    // adds a listener for each ID
+    for (auto id : parameterIDs)
+        parameters.addParameterListener(id, this);
+
+    // set the processCallback for the modulator to change a parameter
+    modulator.setProcessCallback([this](const juce::String& id, float value) 
+        { parameterChanged(id, value); });
 }
 
 ChoruspluginAudioProcessor::~ChoruspluginAudioProcessor()
 {
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout ChoruspluginAudioProcessor::createParameterLayout()
+{
+    using namespace juce;
+
+    std::vector< std::unique_ptr<RangedAudioParameter> > params;
+
+    // chorus
+    params.push_back(std::make_unique<AudioParameterFloat>("00_chorus_rate", "Rate", frequencyRange(0.01f, 20.0f, 0.01f), 2.0f));
+    params.push_back(std::make_unique<AudioParameterFloat>("01_chorus_depth", "Depth", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f));
+    params.push_back(std::make_unique<AudioParameterFloat>("02_chorus_mix", "Mix", 0.00f, 1.00f, 1.0f));
+    params.push_back(std::make_unique<AudioParameterFloat>("03_chorus_delay", "Delay Time", NormalisableRange<float>(0.005f, 0.075f, 0.001f), 0.005f));
+    params.push_back(std::make_unique<AudioParameterFloat>("04_chorus_width", "Width", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f));
+    params.push_back(std::make_unique<AudioParameterChoice>("05_chorus_mode", "Mode", StringArray("Stereo", "Mono", "Dim", "Vib"), 0));
+    params.push_back(std::make_unique<AudioParameterChoice>("06_chorus_voices", "Voices", StringArray("2", "4", "6", "8"), 0));
+    params.push_back(std::make_unique<AudioParameterFloat>("07_chorus_spread", "Spread", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
+
+    // lfo
+    params.push_back(std::make_unique<AudioParameterBool>("08_lfo_type", "Lfo Type", false));
+    params.push_back(std::make_unique<AudioParameterFloat>("09_lfo_phaseL", "Phase Left", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f));
+    params.push_back(std::make_unique<AudioParameterFloat>("10_lfo_phaseR", "Phase Right", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f));
+
+    // filters
+    params.push_back(std::make_unique<AudioParameterFloat>("11_filter_hipass", "High Pass", frequencyRange(20.0f, 20000.0f, 1.0f), 20.0f));
+    params.push_back(std::make_unique<AudioParameterFloat>("12_filter_lopass", "Low Pass", frequencyRange(20.0f, 20000.0f, 1.0f), 20000.0f));
+    params.push_back(std::make_unique<AudioParameterBool>("13_filter_bypass", "Filter Bypass", false));
+
+    // modulator
+    params.push_back(std::make_unique<AudioParameterChoice>("14_mod_target", "Target", StringArray(
+        "00_chorus_rate",
+        "01_chorus_depth",
+        "02_chorus_mix",
+        "03_chorus_delay",
+        "04_chorus_width"), 0));
+    params.push_back(std::make_unique<AudioParameterBool>("15_mod_type", "Mod Type", false));
+    params.push_back(std::make_unique<AudioParameterFloat>("16_mod_rate", "Mod Rate", frequencyRange(0.01f, 10.0f, 0.01f), 2.0f));
+    params.push_back(std::make_unique<AudioParameterFloat>("17_mod_depth", "Mod Depth", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f));
+
+    // gain
+    params.push_back(std::make_unique<AudioParameterFloat>("18_input_gain", "Input", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
+    params.push_back(std::make_unique<AudioParameterFloat>("19_output_gain", "Output", NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
+
+    return { params.begin(), params.end() };
+}
+
+// callback for when a parameter is changed
+void ChoruspluginAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
+{
+    using namespace juce;
+
+    auto& chorus = processorChain.get<chorusIndex>();
+
+    switch (parameterIDs.indexOf(parameterID))
+    {
+        // chorus
+    case (0): // rate
+        chorus.setRate(newValue);
+        break;
+    case (1): // depth
+        chorus.setDepth(newValue);
+        break;
+    case (2): // mix
+        chorus.setMix(newValue);
+        break;
+    case (3): // delay
+        chorus.setDelayTime(newValue);
+        break;
+    case (4): // width
+        chorus.setDelayWidth(newValue);
+        break;
+    case (5): // mode
+        chorus.setMode(static_cast<dingus::Mode>(newValue));
+        break;
+    case (6): // voices
+        chorus.setNumVoice(static_cast<size_t>(newValue));
+        break;
+    case (7): // spread
+        chorus.setVoiceSpread(newValue);
+        break;
+
+        // lfo
+    case (8): // type
+        chorus.setLfoType(static_cast<dingus::WaveType>(newValue));
+        break;
+    case (9): // phase left
+        chorus.setPhaseOffset(newValue, 0);
+        break;
+    case (10): // phase right
+        chorus.setPhaseOffset(newValue, 1);
+        break;
+
+        // filter
+    case (11): // high pass
+        chorus.setHighPass(newValue);
+        break;
+    case (12): // low pass
+        chorus.setLowPass(newValue);
+        break;
+    case (13): // bypass
+        chorus.setFilterBypass(newValue);
+        break;
+
+        // modulator
+    case (14): // target
+    {
+        // keep track of the last value
+        String lastID = modulator.getCurrentID();
+        std::atomic<float>* lastValue = parameters.getRawParameterValue(lastID);
+
+        // set the new target
+        int targetIndex = static_cast<int>(newValue);
+        std::atomic<float>* value = parameters.getRawParameterValue(modTargets[targetIndex]);
+        NormalisableRange<float> range = parameters.getParameterRange(modTargets[targetIndex]);
+        modulator.setTargetParameter(value, range, modTargets[targetIndex]);
+
+        // recursive call to reset the last parameter
+        // make sure the last value wasn't nullptr
+        if (lastValue)
+            parameterChanged(lastID, *parameters.getRawParameterValue(lastID));
+    }
+    break;
+    case (15): // type
+        modulator.setLfoType(static_cast<dingus::WaveType>(newValue));
+        break;
+    case (16): // rate
+        modulator.setLfoRate(newValue);
+        break;
+    case (17): // depth
+        modulator.setLfoDepth(newValue);
+        break;
+
+        // gain
+    case (18): // input
+    {
+        auto& inputGain = processorChain.get<inputGainIndex>();
+        inputGain.setGainLinear(newValue);
+    }
+    break;
+    case (19): // output
+    {
+        auto& outputGain = processorChain.get<outputGainIndex>();
+        outputGain.setGainLinear(newValue);
+    }
+    break;
+
+    default:
+        break;
+    }
 }
 
 //==============================================================================
@@ -93,8 +256,22 @@ void ChoruspluginAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void ChoruspluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    //modulator.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+    processorChain.prepare({ sampleRate, (juce::uint32)samplesPerBlock, 2 });
+
+    auto& inputGain = processorChain.get<inputGainIndex>();
+    auto& outputGain = processorChain.get<outputGainIndex>();
+    inputGain.setRampDurationSeconds(0.1);
+    outputGain.setRampDurationSeconds(0.1);
+
+    // auto& chorus = processorChain.get<chorusIndex>();
+    // setLatencySamples(chorus.getLatency());
+
+    // set initial values for each parameter
+    for (auto id : parameterIDs)
+    {
+        parameterChanged(id, *parameters.getRawParameterValue(id));
+    }
 }
 
 void ChoruspluginAudioProcessor::releaseResources()
@@ -142,18 +319,10 @@ void ChoruspluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    modulator.process(context);
+    processorChain.process(context);
 }
 
 //==============================================================================
@@ -171,15 +340,18 @@ juce::AudioProcessorEditor* ChoruspluginAudioProcessor::createEditor()
 //==============================================================================
 void ChoruspluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = parameters.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
 void ChoruspluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName(parameters.state.getType()))
+            parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
 }
 
 //==============================================================================

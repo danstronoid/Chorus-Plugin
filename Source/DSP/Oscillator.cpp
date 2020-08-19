@@ -136,4 +136,7 @@ SampleType Oscillator<SampleType>::processSample()
 
 //==============================================================================
 
+template class Oscillator<float>;
+template class Oscillator<double>;
+
 } // dingus

@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <vector>
 #include "ChorusVoices.h"
 
 namespace dingus
@@ -57,7 +58,7 @@ public:
         // updates the filterCutoffs according to the updateRate
         for (size_t pos = 0; pos < numSamples;)
         {
-            auto blockSize = jmin((size_t)numSamples - pos, filterUpdateCounter);
+            auto blockSize = juce::jmin((size_t)numSamples - pos, filterUpdateCounter);
             auto subBlock = chorusBlock.getSubBlock(pos, blockSize);
             juce::dsp::ProcessContextReplacing<SampleType> tempContext(subBlock);
             processorChain.process(tempContext);
@@ -79,7 +80,7 @@ public:
         {
             auto* dryIn = inputBlock.getChannelPointer(channel);
             auto* processedInA = chorusBlock.getChannelPointer(channel);
-            auto* processedInB = chorusBlock.getChannelPointer((channel + 1) % maxChannels);
+            auto* processedInB = chorusBlock.getChannelPointer((channel + 1) % numChannels);
             auto* output = outputBlock.getChannelPointer(channel);
 
             auto& boost = m_boostFilters[channel];
@@ -97,7 +98,7 @@ public:
                 break;
             case Mode::MONO:
             {
-                SampleType gainAdjust = SampleType(1) / MathConstants<SampleType>::sqrt2;
+                SampleType gainAdjust = SampleType(1) / juce::MathConstants<SampleType>::sqrt2;
                 for (size_t i = 0; i < numSamples; ++i)
                 {
                     //////////////////////// Mono Chorus ///////////////////////////

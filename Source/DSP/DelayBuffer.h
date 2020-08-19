@@ -11,7 +11,9 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 namespace dingus 
 {

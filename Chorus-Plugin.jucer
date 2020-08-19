@@ -16,6 +16,7 @@
         <FILE id="OdXBvf" name="DelayBuffer.h" compile="0" resource="0" file="Source/DSP/DelayBuffer.h"/>
         <FILE id="YKj3Cz" name="ModDelay.cpp" compile="1" resource="0" file="Source/DSP/ModDelay.cpp"/>
         <FILE id="cxjxio" name="ModDelay.h" compile="0" resource="0" file="Source/DSP/ModDelay.h"/>
+        <FILE id="BKYLec" name="Modulator.h" compile="0" resource="0" file="Source/DSP/Modulator.h"/>
         <FILE id="spGsDS" name="Oscillator.cpp" compile="1" resource="0" file="Source/DSP/Oscillator.cpp"/>
         <FILE id="FceD4H" name="Oscillator.h" compile="0" resource="0" file="Source/DSP/Oscillator.h"/>
       </GROUP>

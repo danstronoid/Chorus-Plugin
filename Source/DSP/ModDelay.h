@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <vector>
 #include "Oscillator.h"
 #include "DelayBuffer.h"
 

@@ -81,4 +81,7 @@ void DelayBuffer<SampleType>::push(SampleType value)
 
 //==============================================================================
 
+template class DelayBuffer<float>;
+template class DelayBuffer<double>;
+
 } // dingus
