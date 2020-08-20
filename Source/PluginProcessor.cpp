@@ -37,6 +37,12 @@ ChoruspluginAudioProcessor::ChoruspluginAudioProcessor()
     modulator.setProcessCallback([this](const juce::String& id, float value) { 
         parameterChanged(id, value); 
         });
+
+    // set gain ramp duration for input/output both chains
+    floatChain.get<inputGainIndex>().setRampDurationSeconds(0.1);
+    floatChain.get<outputGainIndex>().setRampDurationSeconds(0.1);
+    doubleChain.get<inputGainIndex>().setRampDurationSeconds(0.1);
+    doubleChain.get<outputGainIndex>().setRampDurationSeconds(0.1);
 }
 
 ChoruspluginAudioProcessor::~ChoruspluginAudioProcessor()
@@ -90,9 +96,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout ChoruspluginAudioProcessor::
 // callback for when a parameter is changed
 void ChoruspluginAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
+    // update the parameters of only the active precision chain
+    if (isUsingDoublePrecision())
+        updateParameters(parameterID, static_cast<double>(newValue), doubleChain);
+    else
+        updateParameters(parameterID, newValue, floatChain);
+}
+
+template <typename SampleType>
+void ChoruspluginAudioProcessor::updateParameters(const juce::String& parameterID, SampleType newValue, ProcessorChain<SampleType>& chain)
+{
     using namespace juce;
 
-    auto& chorus = processorChain.get<chorusIndex>();
+    auto& chorus = chain.get<chorusIndex>();
 
     switch (parameterIDs.indexOf(parameterID))
     {
@@ -176,13 +192,13 @@ void ChoruspluginAudioProcessor::parameterChanged(const juce::String& parameterI
         // gain
     case (18): // input
     {
-        auto& inputGain = processorChain.get<inputGainIndex>();
+        auto& inputGain = chain.get<inputGainIndex>();
         inputGain.setGainLinear(newValue);
     }
     break;
     case (19): // output
     {
-        auto& outputGain = processorChain.get<outputGainIndex>();
+        auto& outputGain = chain.get<outputGainIndex>();
         outputGain.setGainLinear(newValue);
     }
     break;
@@ -257,16 +273,22 @@ void ChoruspluginAudioProcessor::changeProgramName (int /*index*/, const juce::S
 //==============================================================================
 void ChoruspluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    ProcessingPrecision precision = getProcessingPrecision();
+
+    if (precision == ProcessingPrecision::doublePrecision)
+    {
+        DBG("set to double precision");
+        doubleChain.prepare({ sampleRate, static_cast<juce::uint32>(samplesPerBlock), 2 });
+        floatChain.prepare({ sampleRate, static_cast<juce::uint32>(1), 2 });
+    }
+    else
+    {
+        DBG("set to float precision");
+        floatChain.prepare({ sampleRate, static_cast<juce::uint32>(samplesPerBlock), 2 });
+        doubleChain.prepare({ sampleRate, static_cast<juce::uint32>(1), 2 });
+    }
+
     modulator.prepare({ sampleRate, static_cast<juce::uint32>(samplesPerBlock), 2 });
-    processorChain.prepare({ sampleRate, static_cast<juce::uint32>(samplesPerBlock), 2 });
-
-    auto& inputGain = processorChain.get<inputGainIndex>();
-    auto& outputGain = processorChain.get<outputGainIndex>();
-    inputGain.setRampDurationSeconds(0.1);
-    outputGain.setRampDurationSeconds(0.1);
-
-    // auto& chorus = processorChain.get<chorusIndex>();
-    // setLatencySamples(chorus.getLatency());
 
     // set initial values for each parameter
     for (auto id : parameterIDs)
@@ -305,25 +327,39 @@ bool ChoruspluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 }
 #endif
 
-void ChoruspluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& /*midiMessages*/)
+bool ChoruspluginAudioProcessor::supportsDoublePrecisionProcessing() const
+{
+    return true;
+}
+
+template <typename SampleType>
+void ChoruspluginAudioProcessor::process(juce::AudioBuffer<SampleType>& buffer, ProcessorChain<SampleType>& chain)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
 
-    auto block = juce::dsp::AudioBlock<float>(buffer);
-    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    auto block = juce::dsp::AudioBlock<SampleType>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<SampleType>(block);
     modulator.process(context);
-    processorChain.process(context);
+    chain.process(context);
+}
+
+// float processing
+void ChoruspluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& /*midiMessages*/)
+{
+    jassert(!isUsingDoublePrecision());
+    process(buffer, floatChain);
+}
+
+// double processing
+void ChoruspluginAudioProcessor::processBlock(juce::AudioBuffer<double>& buffer, juce::MidiBuffer& /*midiMessages*/)
+{
+    jassert(isUsingDoublePrecision());
+    process(buffer, doubleChain);
 }
 
 //==============================================================================

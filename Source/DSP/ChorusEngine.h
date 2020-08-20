@@ -162,8 +162,8 @@ private:
     const size_t m_filterUpdateRate{ 100 };
 
     // cut and boost filters for each channel
-    // might move these into the processor chain using the processorDuplicator
-    // then I could toggle the bypass when switching to/from dimension mode
+    // these cannot be part of the processor chain because they're being applied to specific things
+    // boost(dry signal) + wet_channelA - cut(wet_channelB)
     std::vector<juce::dsp::IIR::Filter<SampleType>> m_boostFilters;
     std::vector<juce::dsp::IIR::Filter<SampleType>> m_cutFilters;
     SampleType m_crossoverFreq{ SampleType(200) };

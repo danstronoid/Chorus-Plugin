@@ -31,7 +31,14 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
 
+    // returns if the processor supports double precision
+    bool supportsDoublePrecisionProcessing() const override;
+
+    // override for float precision
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+
+    // override for double precision
+    void processBlock(juce::AudioBuffer<double>&, juce::MidiBuffer&) override;
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -107,10 +114,23 @@ private:
         outputGainIndex
     };
 
-    juce::dsp::ProcessorChain<
-        juce::dsp::Gain<float>,
-        dingus::ChorusEngine<float>,
-        juce::dsp::Gain<float> > processorChain;
+    // template declaration of processor chain
+    template <typename SampleType>
+    using ProcessorChain = juce::dsp::ProcessorChain<
+        juce::dsp::Gain<SampleType>,
+        dingus::ChorusEngine<SampleType>,
+        juce::dsp::Gain<SampleType> >;
+
+    // private process function to call in overloaded processBlocks for float & double
+    template <typename SampleType>
+    void process(juce::AudioBuffer<SampleType>& buffer, ProcessorChain<SampleType>& chain);
+
+    // private update function which can be called on either version of the chain in parameterChanged()
+    template <typename SampleType>
+    void updateParameters(const juce::String& parameterID, SampleType newValue, ProcessorChain<SampleType>& chain);
+
+    ProcessorChain<float> floatChain;
+    ProcessorChain<double> doubleChain;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChoruspluginAudioProcessor)
 };
