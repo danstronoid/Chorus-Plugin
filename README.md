@@ -36,8 +36,6 @@ Master Paramters:
 - Output Gain
 
 # Todo:
-- StateVariableFilter is depreciated, find a different filter.
-- Finish adding support for 64-bit double processing
 - Find a better way to manage IDs
 - Customize look and feel
 - Come up with a good name
